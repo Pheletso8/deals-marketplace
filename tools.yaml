@@ -1,0 +1,182 @@
+apiVersion: v1
+items:
+- apiVersion: ark.mckinsey.com/v1alpha1
+  kind: Tool
+  metadata:
+    annotations:
+      ark.mckinsey.com/service: ark-mcp
+    creationTimestamp: "2025-11-29T10:25:22Z"
+    generation: 1
+    labels:
+      mcp/server: ark-mcp
+    name: ark-mcp-list-agents
+    namespace: default
+    ownerReferences:
+    - apiVersion: ark.mckinsey.com/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: MCPServer
+      name: ark-mcp
+      uid: d6929224-c0b8-4e32-ab1e-cf4b03f08245
+    resourceVersion: "52131"
+    uid: a4e2398b-a6b4-418c-8003-8a147016c720
+  spec:
+    description: "List all agents in the specified namespace.\n\nReturns a list of
+      agents with their basic information including name, description, \nmodel reference,
+      and status."
+    inputSchema:
+      properties:
+        namespace:
+          default: default
+          description: Kubernetes namespace to list agents from
+          type: string
+      type: object
+    mcp:
+      mcpServerRef:
+        name: ark-mcp
+        namespace: default
+      toolName: list_agents
+    type: mcp
+  status:
+    message: Tool configuration is valid
+    state: Ready
+- apiVersion: ark.mckinsey.com/v1alpha1
+  kind: Tool
+  metadata:
+    annotations:
+      ark.mckinsey.com/service: ark-mcp
+    creationTimestamp: "2025-11-29T10:25:22Z"
+    generation: 1
+    labels:
+      mcp/server: ark-mcp
+    name: ark-mcp-query-agent
+    namespace: default
+    ownerReferences:
+    - apiVersion: ark.mckinsey.com/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: MCPServer
+      name: ark-mcp
+      uid: d6929224-c0b8-4e32-ab1e-cf4b03f08245
+    resourceVersion: "52133"
+    uid: 038ad21b-f8ad-4b6a-9165-249172ac2d76
+  spec:
+    description: |-
+      Send a question to a specific agent and get the response.
+
+      This creates a Query resource targeting the specified agent, waits for completion,
+      and returns the agent's response.
+    inputSchema:
+      properties:
+        agent:
+          description: Name of the agent to query
+          type: string
+        input:
+          description: The question or instruction to send to the agent
+          type: string
+        namespace:
+          default: default
+          description: Kubernetes namespace containing the agent
+          type: string
+      required:
+      - agent
+      - input
+      type: object
+    mcp:
+      mcpServerRef:
+        name: ark-mcp
+        namespace: default
+      toolName: query_agent
+    type: mcp
+  status:
+    message: Tool configuration is valid
+    state: Ready
+- apiVersion: ark.mckinsey.com/v1alpha1
+  kind: Tool
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: ark-tenant
+      meta.helm.sh/release-namespace: default
+    creationTimestamp: "2025-11-27T11:21:15Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/managed-by: Helm
+      ark.mckinsey.com/skip-webhook-validation: "true"
+    name: noop
+    namespace: default
+    resourceVersion: "52010"
+    uid: b612aef1-d55f-4a2a-a00c-5cb8e1c7e69b
+  spec:
+    builtin:
+      name: noop
+    description: A no-operation tool that does nothing and returns success
+    inputSchema:
+      properties:
+        message:
+          description: Optional message to include in the response
+          type: string
+      type: object
+    type: builtin
+  status:
+    message: Tool configuration is valid
+    state: Ready
+- apiVersion: ark.mckinsey.com/v1alpha1
+  kind: Tool
+  metadata:
+    creationTimestamp: "2025-11-29T14:50:57Z"
+    generation: 2
+    name: product-search
+    namespace: default
+    resourceVersion: "76867"
+    uid: 77d5d7c6-8f52-42b4-84ae-5d5fe97fb6e3
+  spec:
+    description: web scrapper product search
+    http:
+      method: GET
+      url: http://10.23.220.142:8000/search?headless=true&query={query}
+    inputSchema:
+      properties:
+        query:
+          description: Product to search for
+          type: string
+      required:
+      - query
+      type: object
+    type: http
+  status:
+    message: Tool configuration is valid
+    state: Ready
+- apiVersion: ark.mckinsey.com/v1alpha1
+  kind: Tool
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: ark-tenant
+      meta.helm.sh/release-namespace: default
+    creationTimestamp: "2025-11-27T11:21:15Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/managed-by: Helm
+      ark.mckinsey.com/skip-webhook-validation: "true"
+    name: terminate
+    namespace: default
+    resourceVersion: "52013"
+    uid: 6da9d0f6-7213-4489-b3ad-5423ee2da4ab
+  spec:
+    builtin:
+      name: terminate
+    description: Terminates the conversation
+    inputSchema:
+      properties:
+        response:
+          description: The response to send before terminating the conversation
+          type: string
+      required:
+      - response
+      type: object
+    type: builtin
+  status:
+    message: Tool configuration is valid
+    state: Ready
+kind: List
+metadata:
+  resourceVersion: ""

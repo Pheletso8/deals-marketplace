@@ -1,0 +1,25 @@
+apiVersion: v1
+items:
+- apiVersion: ark.mckinsey.com/v1alpha1
+  kind: Team
+  metadata:
+    creationTimestamp: "2025-11-29T15:58:18Z"
+    generation: 8
+    name: test-team
+    namespace: default
+    resourceVersion: "120379"
+    uid: 57720b7e-529f-46e5-b378-808b807c5511
+  spec:
+    description: tester
+    maxTurns: 1
+    members:
+    - name: customer-input
+      type: agent
+    - name: product-fetcher
+      type: agent
+    - name: product-recommendations
+      type: agent
+    strategy: sequential
+kind: List
+metadata:
+  resourceVersion: ""
