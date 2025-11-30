@@ -11,7 +11,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="mt-28 h-105 flex gap-4 flex-col justify-center items-center">
+    <div className="mt-28 min-h-screen flex gap-4 flex-col justify-center items-center">
       <motion.h1 className="text-3xl font-semibold text-center" initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}>
         Find the <span className="text-blue-400">Best Deals</span> Powered by AI
       </motion.h1>
