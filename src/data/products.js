@@ -10,7 +10,7 @@ const dummyProducts = [
     price: 999,
     oldPrice: 1199,
     tags: ["Hot", "Apple"],
-    img: "https://via.placeholder.com/320x220?text=MacBook+Air+M3",
+    img: "/Macbook.jfif",      // in public/
   },
   {
     id: 2,
@@ -23,7 +23,7 @@ const dummyProducts = [
     price: 449,
     oldPrice: 499,
     tags: ["Hot", "Gaming"],
-    img: "https://via.placeholder.com/320x220?text=PS5+Console",
+    img: "/ps5.jfif",
   },
   {
     id: 3,
@@ -36,7 +36,7 @@ const dummyProducts = [
     price: 899,
     oldPrice: 999,
     tags: ["Hot", "Premium"],
-    img: "https://via.placeholder.com/320x220?text=iPhone+15+Pro",
+    img: "/iPhone.jfif",
   },
   {
     id: 4,
@@ -49,7 +49,7 @@ const dummyProducts = [
     price: 349,
     oldPrice: 399,
     tags: ["New"],
-    img: "https://via.placeholder.com/320x220?text=Apple+Watch+Series+9",
+    img: "/watch.jfif",
   },
   {
     id: 5,
@@ -62,7 +62,7 @@ const dummyProducts = [
     price: 699,
     oldPrice: 799,
     tags: ["Samsung", "Performance"],
-    img: "https://via.placeholder.com/320x220?text=Galaxy+Tab+S9",
+    img: "/tablet.jfif",
   },
   {
     id: 6,
@@ -75,7 +75,7 @@ const dummyProducts = [
     price: 299,
     oldPrice: 349,
     tags: ["Noise Cancelling"],
-    img: "https://via.placeholder.com/320x220?text=Sony+XM5",
+    img: "/headphones.jfif",
   },
   {
     id: 7,
@@ -88,7 +88,7 @@ const dummyProducts = [
     price: 1099,
     oldPrice: 1299,
     tags: ["Camera"],
-    img: "https://via.placeholder.com/320x220?text=Canon+EOS+R10",
+    img: "/camera.jfif",
   },
 ];
 
