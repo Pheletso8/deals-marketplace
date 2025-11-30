@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+playwright==v1.46.0
+beautifulsoup4
+lxml
+pydantic
