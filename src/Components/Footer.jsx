@@ -1,9 +1,11 @@
 export default function Footer() {
   return (
-    <footer className="bg-teal-100 shadow-sm shadow-teal-200 p-6 rounded-lg text-center font-semibold mt-8">
-      <p className="text-gray-800">
-        &copy; 2025 Deal Finder
-      </p>
+    <footer className="bg-gray-900 text-gray-300 py-10 mt-20">
+      <div className="max-w-6xl mx-auto text-center">
+        <h2 className="text-xl font-semibold">DealFinder</h2>
+        <p className="text-sm mt-2">© 2025 DealFinder. All rights reserved.</p>
+      </div>
     </footer>
   );
 }
+

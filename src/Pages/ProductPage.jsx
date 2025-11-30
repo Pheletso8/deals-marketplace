@@ -1,94 +1,41 @@
+// src/Pages/ProductPage.jsx
 import { useParams } from "react-router-dom";
-
-// Reuse the same product data for simplicity
-const products = [
-  {
-    id: 1,
-    name: "MacBook Air M3",
-    brand: "Apple",
-    category: "Laptop",
-    rating: 4.9,
-    reviews: 2340,
-    specs: ["256GB SSD", "8GB RAM"],
-    price: 999,
-    oldPrice: 1199,
-    tags: ["Hot"],
-    img: "https://via.placeholder.com/300x200?text=MacBook+Air+M3",
-  },
-  {
-    id: 2,
-    name: "PS5 Console",
-    brand: "Sony",
-    category: "Gaming",
-    rating: 4.9,
-    reviews: 23456,
-    specs: ["825GB SSD", "16GB GDDR6"],
-    price: 449,
-    oldPrice: 499,
-    tags: ["Hot"],
-    img: "https://via.placeholder.com/300x200?text=PS5+Console",
-  },
-  {
-    id: 3,
-    name: "iPhone 15 Pro",
-    brand: "Apple",
-    category: "Phone",
-    rating: 4.8,
-    reviews: 5621,
-    specs: ["128GB", "8GB RAM"],
-    price: 899,
-    oldPrice: 999,
-    tags: ["Hot"],
-    img: "https://via.placeholder.com/300x200?text=iPhone+15+Pro",
-  },
-  {
-    id: 4,
-    name: "Apple Watch Series 9",
-    brand: "Apple",
-    category: "Smartwatch",
-    rating: 4.8,
-    reviews: 4532,
-    specs: [],
-    price: 349,
-    oldPrice: 399,
-    tags: ["Hot"],
-    img: "https://via.placeholder.com/300x200?text=Apple+Watch+Series+9",
-  },
-];
+import products from "../data/products";
+import { motion } from "framer-motion";
 
 export default function ProductPage() {
   const { id } = useParams();
   const product = products.find((p) => p.id === Number(id));
 
-  if (!product) return <p className="p-6">Product not found.</p>;
+  if (!product) {
+    return (
+      <div className="p-6 mt-20 text-center">
+        <p className="text-gray-600">Product not found.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-      <p className="text-gray-600 mb-2">{product.brand}</p>
-      <img
-        src={product.img}
-        alt={product.name}
-        className="my-4 w-full max-w-md rounded-xl object-cover"
-      />
-      <div className="flex gap-2 flex-wrap mb-2 text-gray-500 text-sm">
-        {product.specs.map((spec, i) => (
-          <span key={i} className="bg-gray-100 px-2 py-1 rounded-md">
-            {spec}
-          </span>
-        ))}
+    <motion.div className="p-6 mt-20 bg-gray-50 min-h-screen flex justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <div className="max-w-3xl w-full bg-white rounded-2xl shadow-md p-6">
+        <div className="flex gap-6 flex-col md:flex-row">
+          <img src={product.img} alt={product.name} className="rounded-xl w-full md:w-1/2 object-cover shadow-sm" />
+          <div className="md:flex-1">
+            <h1 className="text-2xl font-bold mb-1">{product.name}</h1>
+            <p className="text-gray-600 mb-3">{product.brand}</p>
+
+            <div className="flex gap-2 flex-wrap mb-4 text-gray-500 text-sm">
+              {(product.specs || []).map((s, i) => <span key={i} className="bg-gray-100 px-2 py-1 rounded-md">{s}</span>)}
+            </div>
+
+            <p className="text-2xl font-bold mb-2">${product.price}</p>
+            {product.oldPrice && <p className="text-gray-400 line-through mb-4">${product.oldPrice}</p>}
+
+            <p className="mb-4 text-gray-700">Category: <span className="font-medium">{product.category}</span></p>
+            <p className="text-gray-700">⭐ {product.rating} ({product.reviews.toLocaleString()} reviews)</p>
+          </div>
+        </div>
       </div>
-      <p className="font-bold text-xl mb-2">${product.price}</p>
-      {product.oldPrice && (
-        <p className="text-gray-400 line-through mb-4">${product.oldPrice}</p>
-      )}
-      <p className="text-gray-700">
-        Category: <span className="font-medium">{product.category}</span>
-      </p>
-      <p className="text-gray-700">
-        Rating: <span className="font-medium">⭐ {product.rating}</span> (
-        {product.reviews.toLocaleString()} reviews)
-      </p>
-    </div>
+    </motion.div>
   );
 }
