@@ -1,8 +1,9 @@
-// src/Pages/CategoriesPage.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import products from "../data/products";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { LayoutGrid, CheckCircle2 } from "lucide-react";
+import Card from "../Components/Card";
 
 const categories = ["Laptops", "Phones", "Headphones", "Tablets", "Smartwatches", "Cameras", "Gaming"];
 
@@ -13,29 +14,65 @@ export default function CategoriesPage() {
   const filtered = products.filter((p) => p.category === selectedCategory);
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen mt-20">
-      <motion.h2 className="text-3xl font-bold mb-6 text-center" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}>
-        Browse by <span className="text-teal-500">Category</span>
-      </motion.h2>
+    <div className="p-6 bg-surface-950 min-h-screen pt-32 pb-20">
+      <div className="max-w-7xl mx-auto">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }} 
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-16"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-white/10 mb-6 text-brand-primary">
+            <LayoutGrid size={16} />
+            <span className="text-xs font-bold uppercase tracking-widest">Collections</span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-black mb-4">
+            Browse by <span className="text-brand-primary">Category</span>
+          </h2>
+          <p className="text-gray-400 font-light max-w-xl mx-auto">
+            Discover premium tech across our curated collections, all verified for quality and price authenticity.
+          </p>
+        </motion.div>
 
-      <div className="flex flex-wrap gap-2 justify-center mb-6">
-        {categories.map((c) => (
-          <button key={c} onClick={() => setSelectedCategory(c)} className={`px-4 py-2 rounded-lg transition font-medium ${selectedCategory === c ? "bg-teal-500 text-white shadow" : "bg-white border border-gray-300 hover:bg-teal-100"}`}>
-            {c}
-          </button>
-        ))}
+        <div className="flex flex-wrap gap-3 justify-center mb-16">
+          {categories.map((c) => (
+            <button 
+              key={c} 
+              onClick={() => setSelectedCategory(c)} 
+              className={`px-8 py-3 rounded-full transition-all font-bold text-sm border flex items-center gap-2 ${
+                selectedCategory === c 
+                ? "bg-brand-primary border-brand-primary text-white shadow-xl shadow-brand-primary/20" 
+                : "glass border-white/5 text-gray-400 hover:text-white hover:border-white/10"
+              }`}
+            >
+              {selectedCategory === c && <CheckCircle2 size={16} />}
+              {c}
+            </button>
+          ))}
+        </div>
+
+        <motion.div 
+          layout
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+        >
+          <AnimatePresence mode='popLayout'>
+            {filtered.map((p) => (
+              <motion.div 
+                key={p.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Card 
+                  product={p} 
+                  onClick={() => navigate(`/product/${p.id}`)} 
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
       </div>
-
-      <motion.div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        {filtered.map((p) => (
-          <motion.div key={p.id} className="bg-white rounded-2xl shadow-md p-4 flex flex-col hover:shadow-xl hover:-translate-y-1 transition" whileHover={{ scale: 1.02 }}>
-            <img src={p.img} alt={p.name} className="rounded-xl object-cover h-40 w-full mb-4" />
-            <h3 className="font-semibold text-lg">{p.name}</h3>
-            <p className="text-gray-500 text-sm mb-2">{p.brand}</p>
-            <button onClick={() => navigate(`/product/${p.id}`)} className="bg-teal-100 hover:bg-teal-200 text-teal-700 px-3 py-1 rounded-lg font-semibold mt-auto">Details</button>
-          </motion.div>
-        ))}
-      </motion.div>
     </div>
   );
-}
+}

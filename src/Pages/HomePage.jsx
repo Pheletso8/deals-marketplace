@@ -1,10 +1,11 @@
-// src/Pages/HomePage.jsx
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../Services/api"; // axios instance
+import api from "../Services/api";
 import productsFallback from "../data/products";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { v4 as uuidv4 } from 'uuid';
+import { Search, Sparkles, TrendingUp, ChevronRight, AlertCircle, CheckCircle2, Loader2, Info } from "lucide-react";
+import Card from "../Components/Card";
 
 const categories = [
   "All Products",
@@ -17,7 +18,6 @@ const categories = [
   "Gaming",
 ];
 
-// Helper function to create a delay/sleep (in milliseconds)
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function HomePage() {
@@ -27,16 +27,15 @@ function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState("All Products");
   const [sortBy, setSortBy] = useState("Hottest");
   const [searchQuery, setSearchQuery] = useState("");
-  const [agentMessage, setAgentMessage] = useState("Enter a search term above to get AI recommendations!");
+  const [agentMessage, setAgentMessage] = useState("");
+  const [showInsights, setShowInsights] = useState(false);
 
   const navigate = useNavigate();
 
-  // Improved error handler for explicit messages
   const handleError = useCallback((msg, details = "") => {
     const fullMessage = `${msg} ${details ? `Details: ${details}` : ''}`;
-    console.error(fullMessage);
     setError(fullMessage);
-    setAgentMessage(`❌ Error: ${fullMessage}`);
+    setAgentMessage(`❌ ${fullMessage}`);
     setLoading(false);
   }, []);
 
@@ -45,73 +44,52 @@ function HomePage() {
       const statusResponse = await api.get(`/v1/queries/${queryId}`);
       const statusData = statusResponse.data;
 
-      if (statusData.status === 'completed') {
-        // SUCCESS PATH: Clear message, display final AI explanation
-        const finalMessage = statusData?.response?.response || "AI returned an empty response, but completed successfully.";
+      if (statusData.status?.phase === 'done') {
+        const finalMessage = statusData.status?.responses?.[0]?.content 
+                            ?? "AI returned an empty response, but completed successfully.";
         setError(null);
-        setAgentMessage(`✅ Success: ${finalMessage}`);
+        setAgentMessage(finalMessage);
         setLoading(false);
-
-      } else if (statusData.status === 'failed' || statusData.status === 'error') {
-          // FAILURE PATH: Agent/backend crashed or reported failure
-          const failureDetails = statusData?.response?.error_detail || "No specific details provided.";
-          handleError("Ark query processing failed on the server. Agents crashed.", failureDetails);
+        setShowInsights(true);
+      } else if (statusData.status?.phase === 'failed' || statusData.status?.phase === 'error') {
+        const failureDetails = statusData.status?.responses?.[0]?.content 
+                            ?? statusData.status?.conditions?.[0]?.message 
+                            ?? "No specific details provided.";
+        handleError("AI query processing failed.", failureDetails);
       } else {
-        // POLLING PATH: Not done yet, continue polling
-        setTimeout(() => fetchQueryStatus(queryId), 2000);
+        setTimeout(() => fetchQueryStatus(queryId), 5000);
       }
     } catch (err) {
-      // NETWORK ERROR DURING POLLING PATH: Request itself failed (like the 500 error you saw)
       const errorDetails = err.response?.data?.detail || err.message;
-      handleError("Network error while checking query status. Backend might be down.", errorDetails);
+      handleError("Network error while checking status.", errorDetails);
     }
   }, [handleError]);
 
-
-  // This function handles the dynamic AI search request
   const handleAiSearch = async () => {
     if (!searchQuery.trim()) return;
 
     setError(null);
     setLoading(true);
-    setAgentMessage(`⏳ AI is processing your query: "${searchQuery}"...`);
+    setShowInsights(false);
+    setAgentMessage(`⏳ Analyzing the best tech deals for "${searchQuery}"...`);
 
     try {
       const queryId = uuidv4();
-
-      // Step 1: Send the initial request with the DYNAMIC input
       await api.post("/v1/queries", {
           type: 'user',
           name: queryId,
           input: searchQuery,
-          targets: [{
-            type: 'team',
-            name: 'test-team',
-          }],
+          targets: [{ type: 'team', name: 'test-team' }],
         }
       );
-
-      // Add a small delay to mitigate initial race condition
-      await sleep(500);
-
-      // Step 2: Start polling for the result using the same ID
+      await sleep(1000);
       fetchQueryStatus(queryId);
-
     } catch (err) {
-      // NETWORK ERROR ON INITIAL POST PATH: Request failed immediately
       const errorDetails = err.response?.data?.detail || err.message;
-      handleError("Initial API request failed. Check network or API endpoint.", errorDetails);
+      handleError("Search request failed.", errorDetails);
     }
   };
 
-
-  // *** The initial useEffect is now empty/removed ***
-  useEffect(() => {
-    // No automatic fetching happens on page load.
-  }, []);
-
-
-  // FILTER + SORT (Applies to the static product grid)
   const filteredProducts =
     selectedCategory === "All Products"
       ? products
@@ -121,162 +99,180 @@ function HomePage() {
     if (sortBy === "Hottest") return (b.rating || 0) - (a.rating || 0);
     if (sortBy === "Cheapest") return (a.price || 0) - (b.price || 0);
     if (sortBy === "% Discount") {
-      const ad =
-        ((a.oldPrice || a.price) - (a.price || 0)) /
-        (a.oldPrice || a.price || 1);
-      const bd =
-        ((b.oldPrice || b.price) - (b.price || 0)) /
-        (b.oldPrice || b.price || 1);
+      const ad = ((a.oldPrice || a.price) - (a.price || 0)) / (a.oldPrice || a.price || 1);
+      const bd = ((b.oldPrice || b.price) - (b.price || 0)) / (b.oldPrice || b.price || 1);
       return bd - ad;
     }
     return 0;
   });
 
-  // Limit the products array to just the first 3 items for display
-  const limitedProducts = sortedProducts.slice(0, 3);
-
-  // Removed confusing local message generation useEffect
-
-  const handleSearchClick = () => {
-    handleAiSearch();
-  };
-
-
   return (
-    <div className="p-6 bg-gray-50 min-h-screen mt-20">
-      {/* This error alert window is now dynamically styled to show good or bad status */}
-      {error && (
-        <motion.div
-          className="max-w-3xl mx-auto bg-red-50 border border-red-500 text-red-900 p-4 rounded-xl mb-6"
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          {error}
-        </motion.div>
-      )}
-      {/* We keep the main agent message window for the final response */}
+    <div className="min-h-screen bg-surface-950 text-white pb-20">
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 px-6 overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-full bg-brand-primary/10 blur-[120px] rounded-full -z-10" />
+        
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-white/10 mb-8"
+          >
+            <TrendingUp size={16} className="text-brand-secondary" />
+            <span className="text-sm font-bold tracking-wide uppercase">Black Friday Deals Live</span>
+          </motion.div>
 
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold animate-pulse p-4 border m-2 border-gray-300">
-            Black friday is here! 🎁
-          </h1>
-          <h2 className="text-3xl font-bold mb-2">
-            Discover Amazing{" "}
-            <span className="text-blue-400">Tech Deals</span>
-          </h2>
-          <p className="text-gray-600 mb-4">
-            Search for any tech product and let our AI assistant curate the
-            best deals
-          </p>
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-5xl md:text-7xl font-black mb-6 tracking-tight leading-none"
+          >
+            Smart Tech. <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-brand-secondary">Premium Deals.</span>
+          </motion.h1>
 
-          <div className="flex justify-center gap-2 max-w-lg mx-auto">
-            <input
-              type="text"
-              placeholder="Search for tech deals..."
-              className="grow p-3 rounded-l-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSearchClick();
-              }}
-              disabled={loading}
-            />
-            <button
-              onClick={handleSearchClick}
-              className="bg-blue-400 hover:bg-teal-600 text-white px-6 rounded-r-lg font-semibold flex items-center justify-center"
-              disabled={loading}
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-gray-400 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-light leading-relaxed"
+          >
+            Experience the next generation of deal hunting. Our AI agents browse the web to find your perfect tech match at the lowest price.
+          </motion.p>
+
+          {/* Search Bar */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="relative max-w-2xl mx-auto group"
+          >
+            <div className="absolute -inset-1 bg-gradient-to-r from-brand-primary to-brand-secondary rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200" />
+            <div className="relative flex items-center bg-surface-900 border border-white/10 rounded-2xl p-2 pl-6 focus-within:border-brand-primary/50 transition-all">
+              <Search className="text-gray-500" size={20} />
+              <input
+                type="text"
+                placeholder="What tech are you looking for today?"
+                className="bg-transparent border-none focus:ring-0 text-white placeholder-gray-500 w-full px-4 text-lg outline-none"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAiSearch()}
+                disabled={loading}
+              />
+              <button
+                onClick={handleAiSearch}
+                disabled={loading}
+                className="bg-brand-primary hover:bg-brand-primary/90 disabled:bg-gray-800 text-white px-8 py-4 rounded-xl font-bold transition-all flex items-center gap-2 shadow-xl shadow-brand-primary/20"
+              >
+                {loading ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
+                <span>{loading ? 'Analyzing...' : 'Find Deals'}</span>
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* AI Insights Toast/Panel */}
+      <AnimatePresence>
+        {(agentMessage || showInsights) && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="max-w-4xl mx-auto px-6 mb-12"
+          >
+            <div className={`relative glass border p-8 rounded-3xl overflow-hidden ${
+              error ? 'border-red-500/30' : 'border-brand-primary/30'
+            }`}>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/10 blur-3xl -z-10" />
+              <div className="flex items-start gap-6">
+                <div className={`p-4 rounded-2xl ${
+                  error ? 'bg-red-500/10' : 'bg-brand-primary/10'
+                }`}>
+                  {loading ? <Loader2 className="text-brand-primary animate-spin" size={24} /> : 
+                   error ? <AlertCircle className="text-red-500" size={24} /> : 
+                   <Sparkles className="text-brand-primary" size={24} />}
+                </div>
+                <div>
+                  <h4 className="text-lg font-black mb-2 flex items-center gap-2">
+                    DealPulse AI Insight
+                    {!loading && !error && <CheckCircle2 className="text-brand-secondary" size={16} />}
+                  </h4>
+                  <p className="text-gray-300 leading-relaxed font-light whitespace-pre-line">
+                    {agentMessage}
+                  </p>
+                  {showInsights && !loading && (
+                    <div className="mt-4 flex items-center gap-2 text-xs text-brand-primary font-bold uppercase tracking-widest">
+                      <Info size={14} />
+                      Verified by Real-time Web Crawler
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Product Discovery Area */}
+      <section className="max-w-7xl mx-auto px-6 mt-12">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
+          <div className="flex flex-wrap gap-3">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all border ${
+                  selectedCategory === cat
+                    ? "bg-brand-primary border-brand-primary shadow-lg shadow-brand-primary/20 text-white"
+                    : "glass border-white/5 text-gray-400 hover:text-white hover:border-white/10"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-4 bg-surface-900 border border-white/5 rounded-2xl p-1">
+            <span className="pl-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Sort:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="bg-transparent text-sm font-bold border-none focus:ring-0 text-white pr-8 outline-none cursor-pointer"
             >
-              {loading ? <span className="loading loading-spinner loading-sm"></span> : 'Find Deals'}
-            </button>
+              <option value="Hottest" className="bg-surface-900">Hottest</option>
+              <option value="Cheapest" className="bg-surface-900">Cheapest</option>
+              <option value="% Discount" className="bg-surface-900">% Discount</option>
+            </select>
           </div>
         </div>
 
-        {/* This is the LLM output window, just below the search input */}
-        {/* We use a dynamic style here too for visual confirmation of status */}
-        {agentMessage && (
-          <motion.div
-            className={`max-w-3xl mx-auto shadow-md p-4 rounded-xl mb-8 border ${
-                agentMessage.startsWith('❌ Error:') || agentMessage.includes('failed') ? 'bg-red-100 border-red-500 text-red-800' :
-                agentMessage.startsWith('✅ Success:') ? 'bg-green-100 border-green-500 text-green-800' : 'bg-white border-gray-200 text-gray-800'
-            } whitespace-pre-line`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <p className="leading-relaxed">{agentMessage}</p>
-          </motion.div>
-        )}
-
-        {/* categories */}
-        <div className="flex flex-wrap gap-2 justify-center mb-6">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-lg font-medium transition ${
-                selectedCategory === cat
-                  ? "bg-blue-400 text-white"
-                  : "bg-white border border-gray-300 text-gray-700 hover:bg-blue-300"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {/* Sort dropdown */}
-        <div className="flex justify-end mb-4 max-w-7xl mx-auto">
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
-          >
-            <option value="Hottest">Hottest</option>
-            <option value="Cheapest">Cheapest</option>
-            <option value="% Discount">% Discount</option>
-          </select>
-        </div>
-
-        {/* product grid */}
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8 max-w-7xl mx-auto"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+        {/* Product Grid */}
+        <motion.div 
+          layout
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
         >
-          {limitedProducts.map((product) => (
-            <motion.div
-              key={product.id || uuidv4()}
-              className="bg-white p-4 rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1 cursor-pointer flex flex-col h-full"
-              onClick={() => navigate(`/product/${product.id || 'fallback-id'}`)}
-              whileHover={{ scale: 1.02 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-                <img
-                    src={product.imageUrl || 'via.placeholder.com'}
-                    alt={product.name}
-                    className="w-full h-48 object-cover mb-4 rounded-lg"
+          <AnimatePresence mode='popLayout'>
+            {sortedProducts.map((product) => (
+              <motion.div
+                key={product.id || uuidv4()}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Card 
+                  product={product} 
+                  onClick={() => navigate(`/product/${product.id}`)} 
                 />
-                <h3 className="text-lg font-semibold mb-2 text-gray-800">{product.name}</h3>
-                {/* The corrected description logic */}
-                <p className="text-sm text-gray-500 mb-4 grow">
-                    {product.description?.substring(0, 100) || 'No description available.'}
-                    {product.description && product.description.length > 100 ? '...' : ''}
-                </p>
-                <div className="flex justify-between items-center mt-auto">
-                    <p className="text-xl font-bold text-blue-600">${product.price.toFixed(2)}</p>
-                    {product.oldPrice && (
-                    <p className="text-sm text-gray-400 line-through">${product.oldPrice.toFixed(2)}</p>
-                    )}
-                    <span className="text-sm font-medium text-yellow-500">
-                    ⭐ {product.rating.toFixed(1)}
-                    </span>
-                </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </motion.div>
-      </motion.div>
+      </section>
     </div>
   );
 }
 
-export default HomePage;
+export default HomePage;
