@@ -1,6 +1,7 @@
-import { Sparkles, Menu, X, LayoutGrid } from "lucide-react";
+import { Sparkles, Menu, X, LayoutGrid, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import logo from "../assets/download.avif"
 
 export default function Navigation() {
   const [open, setOpen] = useState(false);
@@ -9,16 +10,21 @@ export default function Navigation() {
     <nav className="glass-dark fixed top-0 w-full h-20 px-6 md:px-12 lg:px-24 z-50 flex items-center justify-between">
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2 group">
-        <div className="p-2 bg-brand-primary/20 rounded-xl group-hover:scale-110 transition-transform">
-          <Sparkles className="text-brand-primary" size={24} />
+        <div className="p-2 bg-brand-primary/20 rounded-xl group-hover:scale-110 transition-transform overflow-hidden">
+          <img src={logo} alt="Logo" className="w-8 h-8 object-contain" />
         </div>
-        <h1 className="text-xl md:text-2xl font-bold tracking-tight">
-          Deal<span className="text-brand-primary font-black">Pulse</span>
+        <h1 className="text-xl md:text-2xl font-bold tracking-tight text-white">
+          Deal<span className="text-brand-primary font-black">Finder</span>
         </h1>
       </Link>
 
       {/* Desktop Nav */}
       <div className="hidden md:flex items-center gap-8">
+        {/* Search Icon/Tool */}
+        <button className="p-2 text-gray-300 hover:text-white transition-colors">
+          <Search size={20} />
+        </button>
+        
         <Link
           to="/categories"
           className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors font-medium"
@@ -37,6 +43,7 @@ export default function Navigation() {
       {/* Mobile menu button */}
       <button
         onClick={() => setOpen(!open)}
+        aria-label="Toggle Menu"
         className="md:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
       >
         {open ? <X size={24} className="text-white" /> : <Menu size={24} className="text-white" />}
@@ -64,4 +71,3 @@ export default function Navigation() {
     </nav>
   );
 }
-

@@ -128,7 +128,7 @@ function HomePage() {
             className="text-5xl md:text-7xl font-black mb-6 tracking-tight leading-none"
           >
             Smart Tech. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-brand-secondary">Premium Deals.</span>
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-brand-primary to-brand-secondary">Premium Deals.</span>
           </motion.h1>
 
           <motion.p 
@@ -147,7 +147,7 @@ function HomePage() {
             transition={{ delay: 0.2 }}
             className="relative max-w-2xl mx-auto group"
           >
-            <div className="absolute -inset-1 bg-gradient-to-r from-brand-primary to-brand-secondary rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200" />
+            <div className="absolute -inset-1 bg-linear-to-r from-brand-primary to-brand-secondary rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200" />
             <div className="relative flex items-center bg-surface-900 border border-white/10 rounded-2xl p-2 pl-6 focus-within:border-brand-primary/50 transition-all">
               <Search className="text-gray-500" size={20} />
               <input
@@ -275,4 +275,4 @@ function HomePage() {
   );
 }
 
-export default HomePage;
+export default HomePage;

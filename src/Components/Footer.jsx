@@ -4,7 +4,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">
-            Deal<span className="text-brand-primary font-black">Pulse</span>
+            Deal<span className="text-brand-primary font-black">Finder</span>
           </h2>
           <p className="text-gray-500 text-sm mt-2">Premium Tech Deals Curated by AI.</p>
         </div>
